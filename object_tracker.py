@@ -235,7 +235,8 @@ def main(_argv):
 
         # draw bbox on screen
             # print(len(colors))
-            color = colors[int(track.color) % len(colors)]
+            color = colors[int(track.color
+                               ) % len(colors)]
             # color = colors[random.randint(0, 19)]
             color = [i * 255 for i in color]
             circle = Utils.calculateBottomCenterCoordinate(
