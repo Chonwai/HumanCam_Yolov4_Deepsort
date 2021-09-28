@@ -20,8 +20,9 @@ import tensorflow as tf
 import time
 import os
 import json
-import random
-import uuid
+import socket
+import imagezmq
+import zmq
 
 # comment out below line to enable tensorflow logging outputs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -49,6 +50,13 @@ flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 start_point = (1331, 0)
 end_point = (864, 1078)
 
+# sender = imagezmq.ImageSender(connect_to='tcp://127.0.0.1:5555', REQ_REP = False)
+# sender = imagezmq.ImageSender(connect_to='tcp://127.0.0.1:5555', REQ_REP=False)
+# rpi_name = socket.gethostname()
+
+context = zmq.Context()
+socket = context.socket(zmq.PUSH)
+socket.bind("tcp://127.0.0.1:5555")
 
 def main(_argv):
     # Definition of the parameters
@@ -294,7 +302,9 @@ def main(_argv):
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
         if not FLAGS.dont_show:
-            cv2.imshow("Output Video", result)
+            # cv2.imshow("Output Video", result)
+            # sender.send_image(rpi_name, result)
+            socket.send(Utils.imageToBase64(result))
 
         # if output flag is set, save video file
         if FLAGS.output:
