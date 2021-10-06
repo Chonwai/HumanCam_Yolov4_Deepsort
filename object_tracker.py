@@ -16,13 +16,14 @@ from core.yolov4 import filter_boxes
 import core.utils as utils
 from absl.flags import FLAGS
 from absl import app, flags, logging
+from utils import firebase
 import tensorflow as tf
 import time
+from datetime import datetime
 import os
 import json
-import socket
-import imagezmq
 import zmq
+import numpy as np
 
 # comment out below line to enable tensorflow logging outputs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -50,15 +51,13 @@ flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 start_point = (1331, 0)
 end_point = (864, 1078)
 
-# sender = imagezmq.ImageSender(connect_to='tcp://127.0.0.1:5555', REQ_REP = False)
-# sender = imagezmq.ImageSender(connect_to='tcp://127.0.0.1:5555', REQ_REP=False)
-# rpi_name = socket.gethostname()
-
 context = zmq.Context()
 socket = context.socket(zmq.PUSH)
 socket.bind("tcp://127.0.0.1:5555")
 
+
 def main(_argv):
+    FirebaseDB = firebase.Firebase('./humancam-firebase-cert.json')
     # Definition of the parameters
     max_cosine_distance = 0.4
     nn_budget = None
@@ -242,10 +241,8 @@ def main(_argv):
             class_name = track.get_class()
 
         # draw bbox on screen
-            # print(len(colors))
             color = colors[int(track.color
                                ) % len(colors)]
-            # color = colors[random.randint(0, 19)]
             color = [i * 255 for i in color]
             circle = Utils.calculateBottomCenterCoordinate(
                 int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
@@ -263,8 +260,11 @@ def main(_argv):
             if track.stateInArea == 1 and Utils.isInside(width, height, circle[0], circle[1]) == True and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
-                print(json.dumps([{'id': track.track_id, 'image_base64': str(Utils.imageToBase64(
-                    cropped_image)), 'current_in': peopleIn, 'current_out': peopleOut}], indent=4))
+
+                person = {'id': track.track_id, 'image_base64': str(Utils.imageToBase64(
+                    cropped_image)), 'people_in': peopleIn, 'people_out': peopleOut, 'created_at': str(datetime.now())}
+                print(json.dumps([person], indent=4))
+                FirebaseDB.store(person)
 
                 peopleIn = peopleIn + 1
                 track.stateInArea = 0
@@ -273,8 +273,11 @@ def main(_argv):
             elif track.stateInArea == 0 and Utils.isInside(width, height, circle[0], circle[1]) == False and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
-                print(json.dumps([{'id': track.track_id, 'image_base64': str(Utils.imageToBase64(
-                    cropped_image)), 'current_in': peopleIn, 'current_out': peopleOut}], indent=4))
+
+                person = {'id': track.track_id, 'image_base64': str(Utils.imageToBase64(
+                    cropped_image)), 'people_in': peopleIn, 'people_out': peopleOut, 'created_at': str(datetime.now())}
+                print(json.dumps([person], indent=4))
+                FirebaseDB.store(person)
 
                 peopleOut = peopleOut + 1
                 track.stateInArea = 1
@@ -301,10 +304,19 @@ def main(_argv):
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-        if not FLAGS.dont_show:
-            # cv2.imshow("Output Video", result)
-            # sender.send_image(rpi_name, result)
-            socket.send(Utils.imageToBase64(result))
+        # cv2.imshow("Output Video", result)
+        frameBase64 = Utils.imageToBase64(result)
+
+        jsonResult = json.dumps(
+            {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
+
+        # socket.send(frameBase64)
+        socket.send_string(jsonResult)
+
+        # if not FLAGS.dont_show:
+        #     cv2.imshow("Output Video", result)
+        # sender.send_image(rpi_name, result)
+        # socket.send(Utils.imageToBase64(result))
 
         # if output flag is set, save video file
         if FLAGS.output:
