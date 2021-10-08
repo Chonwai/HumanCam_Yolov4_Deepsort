@@ -30,8 +30,8 @@ class Utils:
         return [int(x), int(y2)]
 
     @staticmethod
-    def isInside(width, height, new_x = 0, new_y = 0):
-        if (height // 2 > new_y):
+    def isInside(toggle_x, toggle_y, new_x = 0, new_y = 0):
+        if (toggle_y > new_y):
             return True
         else:
             return False 

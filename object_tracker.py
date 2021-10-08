@@ -50,6 +50,7 @@ flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
 start_point = (1331, 0)
 end_point = (864, 1078)
+toggle_y = 120
 
 context = zmq.Context()
 socket = context.socket(zmq.PUSH)
@@ -227,11 +228,11 @@ def main(_argv):
         tracker.predict()
         tracker.update(detections, height)
 
-        cv2.line(frame, (0, height // 2), (width, height // 2), (255, 0, 0), 2)
-        cv2.putText(frame, "In", (10, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 2)
-        cv2.putText(frame, "Out", (10, (height // 2) + 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 2)
+        cv2.line(frame, (0, cfg.APP.TOGGLE_Y), (width, cfg.APP.TOGGLE_Y), (255, 0, 0), 1)
+        cv2.putText(frame, "Out", (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+        cv2.putText(frame, "In", (10, (cfg.APP.TOGGLE_Y) + 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
 
         # update tracks
         for track in tracker.tracks:
@@ -257,7 +258,7 @@ def main(_argv):
             ObjectUtils.writeCircleStatusOnFrame(
                 frame, width, height, circle[0], circle[1])
 
-            if track.stateInArea == 1 and Utils.isInside(width, height, circle[0], circle[1]) == True and track.noConsider == False:
+            if track.stateInArea == 1 and Utils.isInside(width, toggle_y, circle[0], circle[1]) == True and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
 
@@ -270,7 +271,7 @@ def main(_argv):
                 track.stateInArea = 0
                 track.noConsider = True
 
-            elif track.stateInArea == 0 and Utils.isInside(width, height, circle[0], circle[1]) == False and track.noConsider == False:
+            elif track.stateInArea == 0 and Utils.isInside(width, toggle_y, circle[0], circle[1]) == False and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
 
@@ -304,14 +305,15 @@ def main(_argv):
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-        # cv2.imshow("Output Video", result)
-        frameBase64 = Utils.imageToBase64(result)
+        cv2.imshow("Output Video", result)
 
-        jsonResult = json.dumps(
-            {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
+        # frameBase64 = Utils.imageToBase64(result)
 
-        # socket.send(frameBase64)
-        socket.send_string(jsonResult)
+        # jsonResult = json.dumps(
+        #     {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
+
+        # # socket.send(frameBase64)
+        # socket.send_string(jsonResult)
 
         # if not FLAGS.dont_show:
         #     cv2.imshow("Output Video", result)
@@ -321,8 +323,9 @@ def main(_argv):
         # if output flag is set, save video file
         if FLAGS.output:
             out.write(result)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(33) & 0xFF == ord('q'):
             break
+
     cv2.destroyAllWindows()
 
 

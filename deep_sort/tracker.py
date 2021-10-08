@@ -7,6 +7,7 @@ from . import iou_matching
 from .track import Track
 from utils.utils import Utils
 import uuid
+from core.config import cfg
 
 class Tracker:
     """
@@ -145,7 +146,7 @@ class Tracker:
         circle = Utils.calculateBottomCenterCoordinate(
                 int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
 
-        stateInArea = Utils.isInside(0, height, circle[0], circle[1])
+        stateInArea = Utils.isInside(0, cfg.APP.TOGGLE_Y, circle[0], circle[1])
         # if (height/2 - yMidT) >= 0:
         #     stateInArea = 1
         # elif (height/2 - yMidT) <= 0:

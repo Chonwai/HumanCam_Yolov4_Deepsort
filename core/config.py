@@ -51,3 +51,7 @@ __C.TEST.SCORE_THRESHOLD      = 0.25
 __C.TEST.IOU_THRESHOLD        = 0.5
 
 
+# App Option
+__C.APP = edict()
+
+__C.APP.TOGGLE_Y = 115
