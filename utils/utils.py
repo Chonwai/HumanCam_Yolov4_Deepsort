@@ -31,7 +31,7 @@ class Utils:
 
     @staticmethod
     def isInside(toggle_x, toggle_y, new_x = 0, new_y = 0):
-        if (toggle_y > new_y):
+        if (toggle_y < new_y):
             return True
         else:
             return False 

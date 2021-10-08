@@ -201,7 +201,7 @@ def main(_argv):
         count = len(names)
         if FLAGS.count:
             cv2.putText(frame, "Objects being tracked: {}".format(
-                count), (5, 35), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, (0, 255, 0), 2)
+                count), (5, 35), 0, 0.5, (0, 255, 0), 2)
             print("Objects being tracked: {}".format(count))
         # delete detections that are not in allowed_classes
         bboxes = np.delete(bboxes, deleted_indx, axis=0)
@@ -230,9 +230,9 @@ def main(_argv):
 
         cv2.line(frame, (0, cfg.APP.TOGGLE_Y), (width, cfg.APP.TOGGLE_Y), (255, 0, 0), 1)
         cv2.putText(frame, "Out", (10, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+                    0, 0.5, (0, 0, 255), 2)
         cv2.putText(frame, "In", (10, (cfg.APP.TOGGLE_Y) + 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+                    0, 0.5, (0, 0, 255), 2)
 
         # update tracks
         for track in tracker.tracks:
@@ -253,12 +253,12 @@ def main(_argv):
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(
                 len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
             cv2.putText(frame, class_name + "-" + str(track.track_id),
-                        (int(bbox[0]), int(bbox[1]-10)), 0, 0.75, (255, 255, 255), 2)
+                        (int(bbox[0]), int(bbox[1]-10)), 0, 0.5, (255, 255, 255), 2)
 
             ObjectUtils.writeCircleStatusOnFrame(
-                frame, width, height, circle[0], circle[1])
+                frame, width, toggle_y, circle[0], circle[1])
 
-            if track.stateInArea == 1 and Utils.isInside(width, toggle_y, circle[0], circle[1]) == True and track.noConsider == False:
+            if track.stateInArea == 0 and (Utils.isInside(width, toggle_y, circle[0], circle[1]) == True) and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
 
@@ -268,10 +268,10 @@ def main(_argv):
                 FirebaseDB.store(person)
 
                 peopleIn = peopleIn + 1
-                track.stateInArea = 0
+                track.stateInArea = 1
                 track.noConsider = True
 
-            elif track.stateInArea == 0 and Utils.isInside(width, toggle_y, circle[0], circle[1]) == False and track.noConsider == False:
+            elif track.stateInArea == 1 and (Utils.isInside(width, toggle_y, circle[0], circle[1]) == False) and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
 
@@ -281,7 +281,7 @@ def main(_argv):
                 FirebaseDB.store(person)
 
                 peopleOut = peopleOut + 1
-                track.stateInArea = 1
+                track.stateInArea = 0
                 track.noConsider = True
 
         # if enable info flag then print details about each track
@@ -297,7 +297,7 @@ def main(_argv):
         for (i, (k, v)) in enumerate(info):
             text = "{}: {}".format(k, v)
             cv2.putText(frame, text, (10, height - ((i * 20) + 20)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 2)
+                        0, 0.5, (0, 0, 255), 2)
 
         # calculate frames per second of running detections
         fps = 1.0 / (time.time() - start_time)
@@ -305,15 +305,15 @@ def main(_argv):
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-        cv2.imshow("Output Video", result)
+        # cv2.imshow("Output Video", result)
 
-        # frameBase64 = Utils.imageToBase64(result)
+        frameBase64 = Utils.imageToBase64(result)
 
-        # jsonResult = json.dumps(
-        #     {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
+        jsonResult = json.dumps(
+            {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
 
-        # # socket.send(frameBase64)
-        # socket.send_string(jsonResult)
+        # socket.send(frameBase64)
+        socket.send_string(jsonResult)
 
         # if not FLAGS.dont_show:
         #     cv2.imshow("Output Video", result)
