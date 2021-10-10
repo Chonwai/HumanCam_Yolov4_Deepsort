@@ -1,4 +1,6 @@
 data/video/*
+data/videos/*
+data/outputs/*
 data/yolo*
 output/*
 outputs/*

@@ -1,3 +1,10 @@
+import os
+import tensorflow as tf
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    tf.config.set_visible_devices(physical_devices[0:1], 'GPU')
+
 from utils.object import ObjectUtils
 from utils.utils import Utils
 from tools import generate_detections as gdet
@@ -17,19 +24,14 @@ import core.utils as utils
 from absl.flags import FLAGS
 from absl import app, flags, logging
 from utils import firebase
-import tensorflow as tf
 import time
 from datetime import datetime
-import os
 import json
 import zmq
 import numpy as np
 
 # comment out below line to enable tensorflow logging outputs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-physical_devices = tf.config.experimental.list_physical_devices('GPU')
-if len(physical_devices) > 0:
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
 # deep sort imports
 flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
@@ -104,6 +106,7 @@ def main(_argv):
         vid = cv2.VideoCapture(video_path)
 
     out = None
+    vid.set(cv2.CAP_PROP_FPS, 30)
 
     # get video ready to save locally if flag is set
     if FLAGS.output:
@@ -305,20 +308,17 @@ def main(_argv):
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-        # cv2.imshow("Output Video", result)
+        cv2.imshow("Output Video", result)
 
         frameBase64 = Utils.imageToBase64(result)
 
         jsonResult = json.dumps(
             {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
 
-        # socket.send(frameBase64)
         socket.send_string(jsonResult)
 
         # if not FLAGS.dont_show:
         #     cv2.imshow("Output Video", result)
-        # sender.send_image(rpi_name, result)
-        # socket.send(Utils.imageToBase64(result))
 
         # if output flag is set, save video file
         if FLAGS.output:
