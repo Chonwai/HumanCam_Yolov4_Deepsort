@@ -123,13 +123,13 @@ def main(_argv):
         return_value, frame = vid.read()
         if return_value:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.resize(frame, (720, 405))
             image = Image.fromarray(frame)
         else:
             print('Video has ended or failed, try a different video format!')
             break
         frame_num += 1
         print('Frame #: ', frame_num)
-        frame_size = frame.shape[:2]
         image_data = cv2.resize(frame, (input_size, input_size))
         image_data = image_data / 255.
         image_data = image_data[np.newaxis, ...].astype(np.float32)
@@ -325,6 +325,7 @@ def main(_argv):
             out.write(result)
         if cv2.waitKey(33) & 0xFF == ord('q'):
             break
+        time.sleep(1/4)
 
     cv2.destroyAllWindows()
 
