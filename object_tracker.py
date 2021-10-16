@@ -308,8 +308,6 @@ def main(_argv):
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-        cv2.imshow("Output Video", result)
-
         frameBase64 = Utils.imageToBase64(result)
 
         jsonResult = json.dumps(
@@ -317,8 +315,8 @@ def main(_argv):
 
         socket.send_string(jsonResult)
 
-        # if not FLAGS.dont_show:
-        #     cv2.imshow("Output Video", result)
+        if not FLAGS.dont_show:
+            cv2.imshow("Output Video", result)
 
         # if output flag is set, save video file
         if FLAGS.output:
