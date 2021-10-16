@@ -323,7 +323,6 @@ def main(_argv):
             out.write(result)
         if cv2.waitKey(33) & 0xFF == ord('q'):
             break
-        time.sleep(1/4)
 
     cv2.destroyAllWindows()
 
