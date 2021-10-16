@@ -130,6 +130,8 @@ def main(_argv):
             break
         frame_num += 1
         print('Frame #: ', frame_num)
+        if (frame_num % 3 != 0):
+            continue
         image_data = cv2.resize(frame, (input_size, input_size))
         image_data = image_data / 255.
         image_data = image_data[np.newaxis, ...].astype(np.float32)
