@@ -130,9 +130,9 @@ def main(_argv):
         frame_num += 1
         print('Frame #: ', frame_num)
 
-        if (frame_num % 3 != 0):
+        if (frame_num % 4 != 0):
             continue
-        if (frame_num % 30000 == 0):
+        if (frame_num % 40000 == 0):
             out = cv2.VideoWriter(FLAGS.output + 'streaming_' + str(datetime.now()) + '.mp4', codec, fps, (resize_frame_width, resize_frame_height))
         
         image_data = cv2.resize(frame, (input_size, input_size))
