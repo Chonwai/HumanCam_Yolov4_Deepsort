@@ -52,7 +52,6 @@ flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
 resize_frame_width = 720
 resize_frame_height = 405
-toggle_y = 120
 
 context = zmq.Context()
 socket = context.socket(zmq.PUSH)
@@ -265,9 +264,9 @@ def main(_argv):
                         (int(bbox[0]), int(bbox[1]-10)), 0, 0.5, (255, 255, 255), 2)
 
             ObjectUtils.writeCircleStatusOnFrame(
-                frame, width, toggle_y, circle[0], circle[1])
+                frame, width, cfg.APP.TOGGLE_Y, circle[0], circle[1])
 
-            if track.stateInArea == 0 and (Utils.isInside(width, toggle_y, circle[0], circle[1]) == True) and track.noConsider == False:
+            if track.stateInArea == 0 and (Utils.isInside(width, cfg.APP.TOGGLE_Y, circle[0], circle[1]) == True) and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
 
@@ -280,7 +279,7 @@ def main(_argv):
                 track.stateInArea = 1
                 track.noConsider = True
 
-            elif track.stateInArea == 1 and (Utils.isInside(width, toggle_y, circle[0], circle[1]) == False) and track.noConsider == False:
+            elif track.stateInArea == 1 and (Utils.isInside(width, cfg.APP.TOGGLE_Y, circle[0], circle[1]) == False) and track.noConsider == False:
                 cropped_image = frame[int(bbox[1]):int(
                     bbox[3]), int(bbox[0]):int(bbox[2])]
 

@@ -54,4 +54,4 @@ __C.TEST.IOU_THRESHOLD        = 0.5
 # App Option
 __C.APP = edict()
 
-__C.APP.TOGGLE_Y = 115
+__C.APP.TOGGLE_Y = 120
