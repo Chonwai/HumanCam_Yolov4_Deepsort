@@ -41,7 +41,7 @@ flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
 flags.DEFINE_string('video', './data/video/test.mp4',
                     'path to input video or set to 0 for webcam')
-flags.DEFINE_string('output', None, 'path to output video')
+flags.DEFINE_string('output', None, 'directory to output video')
 flags.DEFINE_string('output_format', 'XVID',
                     'codec used in VideoWriter when saving video to file')
 flags.DEFINE_float('iou', 0.45, 'iou threshold')
@@ -50,8 +50,8 @@ flags.DEFINE_boolean('dont_show', True, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
-start_point = (1331, 0)
-end_point = (864, 1078)
+resize_frame_width = 720
+resize_frame_height = 405
 toggle_y = 120
 
 context = zmq.Context()
@@ -115,7 +115,7 @@ def main(_argv):
         height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = int(vid.get(cv2.CAP_PROP_FPS))
         codec = cv2.VideoWriter_fourcc(*FLAGS.output_format)
-        out = cv2.VideoWriter(FLAGS.output, codec, fps, (width, height))
+        out = cv2.VideoWriter(FLAGS.output + 'streaming_' + str(datetime.now()) + '.mp4', codec, fps, (resize_frame_width, resize_frame_height))
 
     frame_num = 0
     # while video is running
@@ -123,15 +123,19 @@ def main(_argv):
         return_value, frame = vid.read()
         if return_value:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = cv2.resize(frame, (720, 405))
+            frame = cv2.resize(frame, (resize_frame_width, resize_frame_height))
             image = Image.fromarray(frame)
         else:
             print('Video has ended or failed, try a different video format!')
             break
         frame_num += 1
         print('Frame #: ', frame_num)
+
         if (frame_num % 3 != 0):
             continue
+        if (frame_num % 30000 == 0):
+            out = cv2.VideoWriter(FLAGS.output + 'streaming_' + str(datetime.now()) + '.mp4', codec, fps, (resize_frame_width, resize_frame_height))
+        
         image_data = cv2.resize(frame, (input_size, input_size))
         image_data = image_data / 255.
         image_data = image_data[np.newaxis, ...].astype(np.float32)
@@ -233,7 +237,7 @@ def main(_argv):
         tracker.predict()
         tracker.update(detections, height)
 
-        cv2.line(frame, (0, cfg.APP.TOGGLE_Y), (width, cfg.APP.TOGGLE_Y), (255, 0, 0), 1)
+        cv2.line(frame, (0, cfg.APP.TOGGLE_Y), (resize_frame_width, cfg.APP.TOGGLE_Y), (255, 0, 0), 1)
         cv2.putText(frame, "Out", (10, 50),
                     0, 0.5, (0, 0, 255), 2)
         cv2.putText(frame, "In", (10, (cfg.APP.TOGGLE_Y) + 50),
