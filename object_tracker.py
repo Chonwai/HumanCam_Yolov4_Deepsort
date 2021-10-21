@@ -55,7 +55,7 @@ resize_frame_height = 405
 
 context = zmq.Context()
 socket = context.socket(zmq.PUSH)
-socket.bind("tcp://127.0.0.1:5555")
+socket.bind("tcp://0.0.0.0:5555")
 
 
 def main(_argv):
@@ -130,9 +130,9 @@ def main(_argv):
         frame_num += 1
         print('Frame #: ', frame_num)
 
-        if (frame_num % 4 != 0):
+        if (frame_num % 3 != 0):
             continue
-        if (frame_num % 40000 == 0):
+        if (frame_num % 60000 == 0):
             out = cv2.VideoWriter(FLAGS.output + 'streaming_' + str(datetime.now()) + '.mp4', codec, fps, (resize_frame_width, resize_frame_height))
         
         image_data = cv2.resize(frame, (input_size, input_size))
@@ -326,8 +326,8 @@ def main(_argv):
         # if output flag is set, save video file
         if FLAGS.output:
             out.write(result)
-        if cv2.waitKey(33) & 0xFF == ord('q'):
-            break
+        # if cv2.waitKey(33) & 0xFF == ord('q'):
+        #     break
 
     cv2.destroyAllWindows()
 
