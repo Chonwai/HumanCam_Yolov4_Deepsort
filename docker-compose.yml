@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  yolo:
+    build: ./
+    volumes:
+      - ./:/yolo
+    networks:
+      - web_humancam
+    environment:
+      - "params=${params}"
+networks:
+  web_humancam:
+    external: true
