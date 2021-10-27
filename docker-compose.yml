@@ -9,6 +9,7 @@ services:
       - web_humancam
     environment:
       - "params=${params}"
+    restart: always
 networks:
   web_humancam:
     external: true
