@@ -339,7 +339,7 @@ def main(_argv):
         if FLAGS.output:
             out.write(result)
 
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
