@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 # coding=utf-8
 from easydict import EasyDict as edict
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 __C                           = edict()
@@ -54,4 +57,4 @@ __C.TEST.IOU_THRESHOLD        = 0.5
 # App Option
 __C.APP = edict()
 
-__C.APP.TOGGLE_Y = 130
+__C.APP.TOGGLE_Y = int(os.getenv('TOGGLE_Y'))

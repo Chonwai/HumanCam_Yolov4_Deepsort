@@ -23,6 +23,8 @@ from utils.utils import Utils
 from utils.object import ObjectUtils
 import os
 import tensorflow as tf
+from dotenv import load_dotenv
+load_dotenv()
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -48,11 +50,14 @@ flags.DEFINE_float('score', 0.50, 'score threshold')
 flags.DEFINE_boolean('dont_show', True, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
-flags.DEFINE_boolean('cam_location', 'Testing Env', 'The cam location')
-flags.DEFINE_boolean('cam_id', 0, 'The cam ID')
+flags.DEFINE_string('cam_location', 'Testing Env', 'The cam location')
+flags.DEFINE_integer('cam_id', 0, 'The cam ID')
 
-resize_frame_width = 720
-resize_frame_height = 405
+
+resize_frame_width = int(os.getenv('RESIZE_FRAME_WIDTH'))
+resize_frame_height = int(os.getenv('RESIZE_FRAME_HEIGHT'))
+
+print(resize_frame_width, resize_frame_height)
 
 context = zmq.Context()
 socket = context.socket(zmq.PUSH)
@@ -323,7 +328,7 @@ def main(_argv):
         frameBase64 = Utils.imageToBase64(result)
 
         jsonResult = json.dumps(
-            {'frame': str(frameBase64), 'peopleIn': peopleIn, 'peopleOut': peopleOut})
+            {'frame': str(frameBase64), 'cam_location': cam_location, 'cam_id': cam_id, 'people_in': peopleIn, 'people_out': peopleOut})
 
         socket.send_string(jsonResult)
 
@@ -333,8 +338,6 @@ def main(_argv):
         # if output flag is set, save video file
         if FLAGS.output:
             out.write(result)
-        # if cv2.waitKey(33) & 0xFF == ord('q'):
-        #     break
 
     cv2.destroyAllWindows()
 
