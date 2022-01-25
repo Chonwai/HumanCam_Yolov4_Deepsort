@@ -1,3 +1,8 @@
+import tensorflow as tf
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    tf.config.set_visible_devices(physical_devices[0:1], 'GPU')
 import zmq
 import json
 from datetime import datetime
@@ -22,14 +27,8 @@ from tools import generate_detections as gdet
 from utils.utils import Utils
 from utils.object import ObjectUtils
 import os
-import tensorflow as tf
 from dotenv import load_dotenv
 load_dotenv()
-physical_devices = tf.config.experimental.list_physical_devices('GPU')
-if len(physical_devices) > 0:
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-    tf.config.set_visible_devices(physical_devices[0:1], 'GPU')
-
 
 # comment out below line to enable tensorflow logging outputs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -140,7 +139,7 @@ def main(_argv):
         frame_num += 1
         print('Frame #: ', frame_num)
 
-        if (frame_num % 3 != 0):
+        if (frame_num % 5 != 0):
             continue
         if (frame_num % 60000 == 0):
             out = cv2.VideoWriter(FLAGS.output + 'streaming_' + str(datetime.now()) +
