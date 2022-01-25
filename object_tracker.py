@@ -139,7 +139,7 @@ def main(_argv):
         frame_num += 1
         print('Frame #: ', frame_num)
 
-        if (frame_num % 3 != 0):
+        if (frame_num % 5 != 0):
             continue
         if (frame_num % 60000 == 0):
             out = cv2.VideoWriter(FLAGS.output + 'streaming_' + str(datetime.now()) +
