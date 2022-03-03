@@ -1,6 +1,10 @@
 import base64
 from io import BytesIO
 import cv2
+from utils.area import AreaUtils
+import os
+import json
+
 
 class Utils:
     """Calculate the Coordinate of BBox's Bottom Center Point
@@ -30,19 +34,38 @@ class Utils:
         return [int(x), int(y2)]
 
     @staticmethod
-    def isInside(toggle_x, toggle_y, new_x = 0, new_y = 0):
-        if (toggle_y < new_y):
-            return True
-        else:
-            return False 
-        # x = (-new_y + 3074.83 ) / 2.31
-        # if new_x > x:
-        #     return True
-        # else:
-        #     return False
-    
+    def isInside(toggle_x, toggle_y, new_x=0, new_y=0):
+        PolygonShape = AreaUtils.getPolygonShape(
+            json.loads(str(os.getenv('AREA'))))
+
+        if not PolygonShape:
+            return False
+
+        nvert = len(PolygonShape)
+        vertx = []
+        verty = []
+        testx = new_x
+        testy = new_y
+        for item in PolygonShape:
+            vertx.append(item[0])
+            verty.append(item[1])
+
+        j = nvert - 1
+        res = False
+        for i in range(nvert):
+            if (verty[j] - verty[i]) == 0:
+                j = i
+                continue
+            x = (vertx[j] - vertx[i]) * (testy - verty[i]) / \
+                (verty[j] - verty[i]) + vertx[i]
+            if ((verty[i] > testy) != (verty[j] > testy)) and (testx < x):
+                res = not res
+            j = i
+
+        return res
+
     @staticmethod
     def imageToBase64(image):
         retval, buffer = cv2.imencode('.jpg', image)
-        jpg_as_text = base64.b64encode(buffer)
-        return jpg_as_text
+        jpgToText = base64.b64encode(buffer)
+        return jpgToText
