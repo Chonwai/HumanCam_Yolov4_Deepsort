@@ -1,6 +1,6 @@
 lxml
 tqdm
-tensorflow==2.5
+tensorflow==2.6.2
 absl-py
 easydict
 matplotlib
